@@ -1,3 +1,5 @@
+
+#include "hrrn.h"
 #include "testsets.h"
 #include "fcfs.h"
 #include "sjf.h"
@@ -79,6 +81,27 @@ void printGantt(const SimResult& r) {
   std::cout << "\n";
 }
 
+std::vector<Process> makeHrrnTestSet() {
+    std::vector<Process> procs;
+    auto add = [&](int pid, const std::string& name,
+                   std::uint64_t arrival, std::uint64_t burst) {
+        Process p;
+        p.pid = pid;
+        p.name = name;
+        p.arrivalTime = arrival;
+        p.burstTime = burst;
+        p.remainingTime = burst;
+        p.priority = 1;
+        p.dynamicPriority = 1;
+        procs.push_back(p);
+    };
+    add(1, "A",  0, 4);
+    add(2, "L",  1, 6);
+    add(3, "S1", 4, 2);
+    add(4, "S2", 5, 1);
+    return procs;
+}
+
 int main() {
   std::cout << "Case 1: CPU-bound\n";
   {
@@ -111,16 +134,26 @@ int main() {
 
   std::cout << "\n";
   {
-    auto set = makeTestSet();
-    saveSet("sets/set_basic.txt", set);
-    std::vector<Process> loaded;
-    if (!loadSet("sets/set_basic.txt", loaded)) {
-        std::cerr << "Не удалось загрузить set_basic.txt\n";
-        return 1;
+    auto set = makeHrrnTestSet();
+    std::cout << "\n=== HRRN test ===\n";
+
+    // SJF
+    {
+        SjfScheduler sjf(set);
+        SimResult r = runSimulation(sjf);
+        printResult(r);
+        printGantt(r);
+        std::cout << "\n";
     }
-    FcfsScheduler a(set), b(loaded);
-    printResult(runSimulation(a));
-    printResult(runSimulation(b)); // строки должны совпасть
+
+    // HRRN
+    {
+        HrrnScheduler hrrn(set);
+        SimResult r = runSimulation(hrrn);
+        printResult(r);
+        printGantt(r);
+        std::cout << "\n";
+    }
   }
 
   return 0;
