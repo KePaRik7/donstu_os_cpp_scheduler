@@ -112,10 +112,15 @@ int main() {
   std::cout << "\n";
   {
     auto set = makeTestSet();
-    RrScheduler rr(set, 2);
-    SimResult r = runSimulation(rr);
-    std::cout << "\nПо процессам, RR (q=2):\n";
-    printProcessTable(rr.processes());
+    saveSet("sets/set_basic.txt", set);
+    std::vector<Process> loaded;
+    if (!loadSet("sets/set_basic.txt", loaded)) {
+        std::cerr << "Не удалось загрузить set_basic.txt\n";
+        return 1;
+    }
+    FcfsScheduler a(set), b(loaded);
+    printResult(runSimulation(a));
+    printResult(runSimulation(b)); // строки должны совпасть
   }
 
   return 0;
