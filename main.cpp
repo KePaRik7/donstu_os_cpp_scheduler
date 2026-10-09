@@ -76,6 +76,7 @@ void printGantt(const SimResult& r) {
   for (auto& [pid, span] : r.gantt) {
     std::cout << "  [" << span.first << "-" << span.second << ") ";
     if (pid == -1) std::cout << "IDLE\n";
+    else if (pid == -2) std::cout << "CS\n";
     else std::cout << "P" << pid << "\n";
   }
   std::cout << "\n";
