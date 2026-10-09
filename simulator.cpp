@@ -51,6 +51,7 @@ SimResult runSimulation(Scheduler& sched, std::uint64_t maxTicks) {
           if (!p->started) {
               p->started = true;
               p->startTime = tick;
+              p->responseTime = tick - p->arrivalTime; 
 	  }
 
           p->state = ProcessState::RUNNING;

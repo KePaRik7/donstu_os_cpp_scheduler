@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(donstu_os_cpp_scheduler main.cpp
     process.h
     scheduler.h
+    testsets.h
     fcfs.h
     sjf.h
     srtn.h
