@@ -9,6 +9,7 @@
 #include "mlfq.h"
 #include "simulator.h"
 
+#include <string> 
 #include <iostream>
 #include <iomanip>
 #include <vector>
@@ -135,25 +136,16 @@ int main() {
 
   std::cout << "\n";
   {
-    auto set = makeHrrnTestSet();
-    std::cout << "\n=== HRRN test ===\n";
-
-    // SJF
-    {
-        SjfScheduler sjf(set);
-        SimResult r = runSimulation(sjf);
-        printResult(r);
-        printGantt(r);
-        std::cout << "\n";
-    }
-
-    // HRRN
-    {
-        HrrnScheduler hrrn(set);
-        SimResult r = runSimulation(hrrn);
-        printResult(r);
-        printGantt(r);
-        std::cout << "\n";
+    auto set = makeTestSet();
+    std::cout << "\nВлияние кванта в RR (набор makeTestSet)\n";
+    std::cout << "q wait turn resp CS\n";
+    for (std::uint64_t q : {1, 2, 4, 8, 16}) {
+        RrScheduler rr(set, q);
+        SimResult r = runSimulation(rr);
+        std::cout << std::setw(2) << q << " " << std::fixed << std::setprecision(2)
+                  << r.avgWaiting << " " << r.avgTurnaround << " " << r.avgResponse
+                  << " " << std::setw(3) << r.contextSwitches << " "
+                  << std::string(r.contextSwitches, '#') << "\n";
     }
   }
 
