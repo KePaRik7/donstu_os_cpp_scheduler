@@ -44,6 +44,7 @@ struct Process {
   std::vector<IoBlock> ioBlocks;
 
   // Метрики (заполняются симулятором)
+  bool started = false;  
   // момент первого запуска
   std::uint64_t startTime = 0;
   // момент завершения

@@ -21,11 +21,6 @@ SimResult runSimulation(Scheduler& sched, std::uint64_t maxTicks) {
     }
 
     // 2. Накапливаем waitingTime для процессов в READY
-    for (auto& p : procs) {
-      if (p.state == ProcessState::READY) {
-        p.waitingTime++;
-      }
-    }
 
     // 3. Все ли завершены?
     bool allDone = true;
@@ -53,10 +48,11 @@ SimResult runSimulation(Scheduler& sched, std::uint64_t maxTicks) {
       if (currentPid != -1) {
         Process* p = sched.find(currentPid);
         if (p) {
-          if (p->state == ProcessState::READY && p->startTime == 0) {
-            p->startTime = tick;
-            p->responseTime = tick - p->arrivalTime;
-          }
+          if (!p->started) {
+              p->started = true;
+              p->startTime = tick;
+	  }
+
           p->state = ProcessState::RUNNING;
           p->contextSwitches++;
           if (prevPid != currentPid) res.contextSwitches++;
@@ -81,7 +77,7 @@ SimResult runSimulation(Scheduler& sched, std::uint64_t maxTicks) {
         if (p->nextIoIndex < p->ioBlocks.size() &&
             p->executedTicks == p->ioBlocks[p->nextIoIndex].atTick) {
           p->state = ProcessState::WAITING;
-          p->ioReturnTick = tick + p->ioBlocks[p->nextIoIndex].duration;
+          p->ioReturnTick = tick + 1 + p->ioBlocks[p->nextIoIndex].duration;
           p->ioWaitTime += p->ioBlocks[p->nextIoIndex].duration;
           p->nextIoIndex++;
           sched.onProcessBlocked(currentPid, tick);
@@ -96,6 +92,13 @@ SimResult runSimulation(Scheduler& sched, std::uint64_t maxTicks) {
         }
       }
     }
+    
+    // 7a. Все, кто остался в READY, ждали этот такт
+	for (auto& p : procs) {
+   	 if (p.state == ProcessState::READY) {
+       		 p.waitingTime++;
+    		}
+	}
 
     // 8. Запись в диаграмму Ганта (по фактически выполнявшемуся процессу)
     if (ranPid != -1) {
