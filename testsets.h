@@ -10,7 +10,10 @@
 #include <string>
 #include <vector>
 
-// Таблица по каждому процессу (вызывать после runSimulation)
+// ============================================================
+// Задание 8. Таблица по каждому процессу
+// Вызывать после runSimulation.
+// ============================================================
 inline void printProcessTable(const std::vector<Process>& procs) {
     std::cout << std::left << std::setw(6) << "Proc" << std::right
               << std::setw(8) << "arrival" << std::setw(7) << "burst"
@@ -27,9 +30,12 @@ inline void printProcessTable(const std::vector<Process>& procs) {
     }
 }
 
+// ============================================================
+// Задание 13. Сохранение и загрузка наборов
 // Формат файла: одна строка — один процесс
 // pid имя arrival burst priority deadline io
 // где io — список "atTick:duration" через запятую, либо "-" если I/O нет.
+// ============================================================
 inline bool saveSet(const std::string& path, const std::vector<Process>& procs) {
     std::ofstream out(path);
     if (!out) return false;
@@ -77,3 +83,51 @@ inline bool loadSet(const std::string& path, std::vector<Process>& procs) {
     }
     return true;
 }
+
+// ============================================================
+// Задание 9 (по желанию). Диаграмма Ганта в CSV
+// pid,start,end (pid -1 = простой, -2 = переключение контекста)
+// ============================================================
+inline bool saveGanttCsv(const std::string& path, const SimResult& r) {
+    std::ofstream out(path);
+    if (!out) return false;
+    out << "pid,start,end\n";
+    for (const auto& g : r.gantt) {
+        out << g.first << ',' << g.second.first << ',' << g.second.second << '\n';
+    }
+    return true;
+}
+
+// ============================================================
+// Задание 10. Генератор случайных наборов
+// Один и тот же seed всегда даёт один и тот же набор.
+// ============================================================
+inline std::vector<Process> makeRandomSet(unsigned seed, int count) {
+    std::mt19937 gen(seed);
+    std::uniform_int_distribution<int> arrival(0, 30), burst(2, 15);
+    std::uniform_int_distribution<int> prio(1, 5), coin(0, 99);
+
+    std::vector<Process> procs;
+    for (int i = 0; i < count; ++i) {
+        Process p;
+        p.pid = i + 1;
+        p.name = "P" + std::to_string(i + 1);
+        p.arrivalTime = static_cast<std::uint64_t>(arrival(gen));
+        p.burstTime = static_cast<std::uint64_t>(burst(gen));
+        p.remainingTime = p.burstTime;
+        p.priority = prio(gen);
+        p.dynamicPriority = p.priority;
+
+        // примерно у трети процессов есть I/O: atTick возрастает и строго меньше burstTime
+        if (p.burstTime >= 4 && coin(gen) < 35) {
+            std::uint64_t at = 1 + static_cast<std::uint64_t>(gen() % 2);
+            while (at < p.burstTime) {
+                p.ioBlocks.push_back({at, 2 + static_cast<std::uint64_t>(gen() % 4)});
+                at += 2 + static_cast<std::uint64_t>(gen() % 3);
+            }
+        }
+        procs.push_back(p);
+    }
+    return procs;
+}
+
