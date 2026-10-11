@@ -331,5 +331,25 @@ int main() {
 
     runExperiment10();
 
-    return 0;
+        {
+        auto set = makeTestSet();
+
+        RrScheduler rr(set, 2);
+        SimResult r1 = runSimulation(rr);
+        if (saveGanttCsv("results/gantt_rr2.csv", r1)) {
+            std::cout << "Сохранено: results/gantt_rr2.csv\n";
+        } else {
+            std::cerr << "Не удалось сохранить results/gantt_rr2.csv\n";
+        }
+
+        MlfqScheduler mlfq(set);
+        SimResult r2 = runSimulation(mlfq);
+        if (saveGanttCsv("results/gantt_mlfq.csv", r2)) {
+            std::cout << "Сохранено: results/gantt_mlfq.csv\n";
+        } else {
+            std::cerr << "Не удалось сохранить results/gantt_mlfq.csv\n";
+        }
+    }   
+ return 0;
 }
+
