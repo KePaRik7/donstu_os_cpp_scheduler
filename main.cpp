@@ -349,7 +349,21 @@ int main() {
         } else {
             std::cerr << "Не удалось сохранить results/gantt_mlfq.csv\n";
         }
-    }   
+    }
+
+	// ============================================================
+// Задание 7. Многоядерный режим
+// ============================================================
+{
+    auto set = makeTestSet();
+    std::cout << "\n=== Задание 7: многоядерный режим (SJF) ===\n";
+    for (int cores : {1, 2, 4}) {
+        SjfScheduler s(set);
+        SimResult r = runSimulationMulti(s, cores);
+        printResult(r);
+    }
+}
+   
  return 0;
 }
 
